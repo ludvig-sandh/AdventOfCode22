@@ -8,5 +8,5 @@ with open("in.txt", "r") as f:
             s += int(c)
         li.append(s)
     li.sort()
-    print(li[-1])
-    print(li[-3] + li[-2] + li[-1])
+    print("A:", li[-1])
+    print("B:", li[-3] + li[-2] + li[-1])
