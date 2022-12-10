@@ -11,6 +11,5 @@ with open("in.txt", "r") as f:
 
     ans = 0
     for i in range(20, len(xs), 40):
-        print(xs[i])
         ans += xs[i - 1] * i
     print(ans)
