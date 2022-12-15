@@ -1,6 +1,7 @@
 with open("in.txt", "r") as f:
     sensors = []
     beacons = []
+    beacons_set = set()
     for line in f.read().split("\n"):
         sx = int(line[line.find("x=") + 2:line.find(",")])
         sy = int(line[line.find("y=") + 2:line.find(":")])
@@ -31,8 +32,10 @@ with open("in.txt", "r") as f:
         intervals[sensors[i][1]].append((sensors[i][0] - dist, True))
         intervals[sensors[i][1]].append((sensors[i][0] + dist, False))
     
+    beacons_set = set(beacons)
+    
     sums = {}
-    for y in intervals:
+    for y in [2000000]:
         sums[y] = 0
         stack = []
         interval = sorted(intervals[y], key=lambda x: (x[0], not x[1]))
@@ -43,7 +46,7 @@ with open("in.txt", "r") as f:
             top = stack.pop()
             if stack == []:
                 sums[y] += x - top + 1
-                for bx, by in beacons:
+                for bx, by in beacons_set:
                     if by == y:
                         if top <= bx <= x:
                             sums[y] -= 1
@@ -51,5 +54,5 @@ with open("in.txt", "r") as f:
                     if sy == y:
                         if top <= sx <= x:
                             sums[y] -= 1
-    print(sums[10])
+    print(sums[2000000])
         
