@@ -1,4 +1,3 @@
-# 17:20 - 17:29
 from dataclasses import dataclass
 
 @dataclass
@@ -108,3 +107,5 @@ with open("in.txt", "r") as f:
 
     droplet.find_reachable()
     print(droplet.count_area())
+
+# Total: 30min

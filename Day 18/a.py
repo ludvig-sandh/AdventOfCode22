@@ -1,4 +1,3 @@
-# 17:20 - 17:29
 from dataclasses import dataclass
 
 @dataclass
