@@ -1,5 +1,5 @@
-from heapq import *
-from dataclasses import dataclass
+from sys import setrecursionlimit
+from math import ceil
 
 MINUTES = 32
 
@@ -7,84 +7,28 @@ orem_cost = [0, 0, 0]
 claym_cost = [0, 0, 0]
 obsm_cost = [0, 0, 0]
 geom_cost = [0, 0, 0]
+robot_costs = [orem_cost, claym_cost, obsm_cost, geom_cost]
 
-@dataclass
-class State:
-    i: int
-    ore: int
-    clay: int
-    obs: int
-    geo: int
-    orem: int
-    claym: int
-    obsm: int
-    geom: int
+DP = None
 
-    def get_key(self):
-        return (self.i, self.ore, self.clay, self.obs, self.geo, self.orem, self.claym, self.obsm, self.geom)
+def dp(i, ore, clay, obs, orem, claym, obsm, geom):
+    if i >= MINUTES:
+        return 0
 
-    def __lt__(self, other):
-        return self.get_key() < other.get_key()
+    key = (i, ore, clay, obs, orem, claym, obsm, geom)
+    if key in DP:
+        return DP[key]
 
-def calculate_priority(state: State) -> int:
-    return -state.geom * 1000000 - state.obsm * 10000 - state.claym * 100 - state.orem - state.geo * 100000
+    best = 0
+    robots = [orem, claym, obsm]
 
-def estimate_possible(state: State, max_geo) -> bool:
-    return True
+    for j in range(4):
+        minutes_forward = max(1, 1 + max([ceil((robot_costs[j][0] - ore) / orem), (ceil((robot_costs[j][1] - clay) / claym) if claym != 0 else MINUTES) if robot_costs[j][1] != 0 else 0, (ceil((robot_costs[j][2] - obs) / obsm) if obsm != 0 else MINUTES) if robot_costs[j][2] != 0 else 0]))
+        if j < 3 and robots[j] + 1 > max([orem_cost[j], claym_cost[j], obsm_cost[j], geom_cost[j]]): continue
+        best = max(best, geom + dp(i + minutes_forward, ore - robot_costs[j][0] + orem * minutes_forward, clay - robot_costs[j][1] + claym * minutes_forward, obs - robot_costs[j][2] + obsm * minutes_forward, orem + (1 if j == 0 else 0), claym + (1 if j == 1 else 0), obsm + (1 if j == 2 else 0), geom + (1 if j == 3 else 0)))
 
-def astar():
-    visited = set()
-    pq = []
-    start_state = State(0, 0, 0, 0, 0, 1, 0, 0, 0)
-    heappush(pq, [0, start_state])
-    max_geo = 0
-    earliest = MINUTES
-    while len(pq) != 0:
-        _, state = heappop(pq)
-
-        key = state.get_key()
-        if key in visited: continue
-        visited.add(key)
-
-        i, ore, clay, obs, geo, orem, claym, obsm, geom = key
-        if geo > max_geo:
-            max_geo = geo
-            print(f"New max geodes found: {max_geo, i}")
-        if geo > 0 and i < earliest:
-            earliest = i
-            print(f"New earliest found: {earliest}")
-        if i == MINUTES:
-            continue
-
-        if not estimate_possible(state, max_geo):
-            continue
-
-        # Buy nothing
-        state_nothing = State(i + 1, ore + orem, clay + claym, obs + obsm, geo + geom, orem, claym, obsm, geom)
-        heappush(pq, [calculate_priority(state_nothing), state_nothing])
-        
-        # Buy ore machine
-        if ore >= orem_cost[0] and clay >= orem_cost[1] and obs >= orem_cost[2]:
-            state_orem = State(i + 1, ore - orem_cost[0] + orem, clay - orem_cost[1] + claym, obs - orem_cost[2] + obsm, geo + geom, orem + 1, claym, obsm, geom)
-            heappush(pq, [calculate_priority(state_orem), state_orem])
-
-        # Buy clay machine
-        if ore >= claym_cost[0] and clay >= claym_cost[1] and obs >= claym_cost[2]:
-            state_claym = State(i + 1, ore - claym_cost[0] + orem, clay - claym_cost[1] + claym, obs - claym_cost[2] + obsm, geo + geom, orem, claym + 1, obsm, geom)
-            heappush(pq, [calculate_priority(state_claym), state_claym])
-
-        # Buy obsidian machine
-        if ore >= obsm_cost[0] and clay >= obsm_cost[1] and obs >= obsm_cost[2]:
-            state_obsm = State(i + 1, ore - obsm_cost[0] + orem, clay - obsm_cost[1] + claym, obs - obsm_cost[2] + obsm, geo + geom, orem, claym, obsm + 1, geom)
-            heappush(pq, [calculate_priority(state_obsm), state_obsm])
-        
-        # Buy geode machine
-        if ore >= geom_cost[0] and clay >= geom_cost[1] and obs >= geom_cost[2]:
-            state_geom = State(i + 1, ore - geom_cost[0] + orem, clay - geom_cost[1] + claym, obs - geom_cost[2] + obsm, geo + geom, orem, claym, obsm, geom + 1)
-            heappush(pq, [calculate_priority(state_geom), state_geom])
-
-    return max_geo
-
+    DP[key] = best
+    return best
 
 def read_robot(line, arr):
     char_to_index = {
@@ -122,16 +66,14 @@ def read_blueprint(line):
     read_robot(obs_sentence, obsm_cost)
     read_robot(geo_sentence, geom_cost)
 
+setrecursionlimit(1000000000)
 with open("in.txt", "r") as f:
     lines = f.read().split("\n")
     answer = 1
-    for i, line in enumerate(lines[1:3], 1):
+    for i, line in enumerate(lines[:3], 1):
         read_blueprint(line)
-        best = astar()
+        DP = dict()
+        best = dp(0, 0, 0, 0, 1, 0, 0, 0)
         print(f"BEST for blueprint {i}: {best}")
         answer *= best
     print(answer)
-
-# 11
-# 13
-# 21

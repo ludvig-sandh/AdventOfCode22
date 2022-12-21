@@ -1,4 +1,3 @@
-# 15:10
 from sys import setrecursionlimit
 
 MINUTES = 24
@@ -11,8 +10,6 @@ geom_cost = [0, 0, 0]
 DP = None
 
 def dp(i, ore, clay, obs, orem, claym, obsm, geom):
-    # assert(not(ore < 0 or clay < 0 or obs < 0))
-
     if i == MINUTES:
         return 0
 
@@ -25,15 +22,18 @@ def dp(i, ore, clay, obs, orem, claym, obsm, geom):
     
     # Buy ore machine
     if ore >= orem_cost[0] and clay >= orem_cost[1] and obs >= orem_cost[2]:
-        best = max(best, geom + dp(i + 1, ore - orem_cost[0] + orem, clay - orem_cost[1] + claym, obs - orem_cost[2] + obsm, orem + 1, claym, obsm, geom))
+        if orem + 1 <= max([orem_cost[0], claym_cost[0], obsm_cost[0], geom_cost[0]]):
+            best = max(best, geom + dp(i + 1, ore - orem_cost[0] + orem, clay - orem_cost[1] + claym, obs - orem_cost[2] + obsm, orem + 1, claym, obsm, geom))
 
     # Buy clay machine
     if ore >= claym_cost[0] and clay >= claym_cost[1] and obs >= claym_cost[2]:
-        best = max(best, geom + dp(i + 1, ore - claym_cost[0] + orem, clay - claym_cost[1] + claym, obs - claym_cost[2] + obsm, orem, claym + 1, obsm, geom))
+        if claym + 1 <= max([orem_cost[1], claym_cost[1], obsm_cost[1], geom_cost[1]]):
+            best = max(best, geom + dp(i + 1, ore - claym_cost[0] + orem, clay - claym_cost[1] + claym, obs - claym_cost[2] + obsm, orem, claym + 1, obsm, geom))
 
     # Buy obsidian machine
     if ore >= obsm_cost[0] and clay >= obsm_cost[1] and obs >= obsm_cost[2]:
-        best = max(best, geom + dp(i + 1, ore - obsm_cost[0] + orem, clay - obsm_cost[1] + claym, obs - obsm_cost[2] + obsm, orem, claym, obsm + 1, geom))
+        if obsm + 1 <= max([orem_cost[2], claym_cost[2], obsm_cost[2], geom_cost[2]]):
+            best = max(best, geom + dp(i + 1, ore - obsm_cost[0] + orem, clay - obsm_cost[1] + claym, obs - obsm_cost[2] + obsm, orem, claym, obsm + 1, geom))
     
     # Buy geode machine
     if ore >= geom_cost[0] and clay >= geom_cost[1] and obs >= geom_cost[2]:
@@ -77,7 +77,6 @@ def read_blueprint(line):
     read_robot(clay_sentence, claym_cost)
     read_robot(obs_sentence, obsm_cost)
     read_robot(geo_sentence, geom_cost)
-    # print(*[orem_cost, claym_cost, obsm_cost, geom_cost], sep="\n")
 
 setrecursionlimit(1000000000)
 with open("in.txt", "r") as f:
