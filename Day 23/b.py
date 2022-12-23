@@ -34,25 +34,6 @@ def count_ground():
                 ans += 1
     return ans
 
-def display():
-    ir, ic = 1000000, 1000000
-    ar, ac = -1000000, -1000000
-    for (r, c) in elves:
-        ir = min(ir, r)
-        ic = min(ic, c)
-        ar = max(ar, r)
-        ac = max(ac, c)
-    ir, ic = 0, 0
-    ar, ac = 5, 5
-    for r in range(ir, ar + 1):
-        for c in range(ic, ac + 1):
-            if (r, c) in elves:
-                print("#", end="")
-            else:
-                print(".", end="")
-        print()
-    print()
-
 NUM_ROUNDS = 10
 current_round = 0
 while True:
